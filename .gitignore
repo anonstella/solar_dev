@@ -1,0 +1,5 @@
+*.prettierrc
+*__pycache__
+.venv/
+database.db
+.env
