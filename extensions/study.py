@@ -67,6 +67,18 @@ class stop(lightbulb.SlashCommand, name="stop", description="Stops a study sessi
         else:
             await ctx.respond("You're not currently on a study session! Make sure to start it first!", ephemeral=True)
 
+@loader.command
+class elapse(lightbulb.SlashCommand, name="elapse", description="Check how long has study session elapsed."):
+    
+    @lightbulb.invoke
+    @registerStatus
+    async def callback(self, ctx: lightbulb.Context) -> None:
+        if cur.execute("SELECT study FROM users WHERE userid = ?", (ctx.user.id,)).fetchone() != ("li", "st"):
+            await ctx.respond("You haven't start studying yet! Do so by running `/study [type]`,")
+        else:
+
+            await ctx.respond("Total time elapsed: ``.")
+
 def load(client: lightbulb.Client):
     client.register(start)
     client.register(stop)
