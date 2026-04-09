@@ -2,6 +2,7 @@ import lightbulb
 from lightbulb import Choice
 import sqlite3
 from datetime import datetime
+import hikari
 from decorators.decorators import registerStatus, prettify
 from functions.economy import initialise, EconomyCalculate
 
@@ -63,7 +64,11 @@ class stop(lightbulb.SlashCommand, name="stop", description="Stops a study sessi
             sols, xi = eco.calculate_earnings(raw)
             eco.update_earnings(ctx, sols, xi)
             resx = cur.execute("SELECT * FROM statuses WHERE userid = ?", (ctx.user.id,)).fetchone()
-            await ctx.respond(f"Your study session has been stopped :) Go take a rest.\nTotal study time: `{beautified}` {f" (raw = `{raw}`)" if resx[2] == 1 else ""}.\nEarnings: {sols}𝑠 | {xi}ξ") #{timeΔ} 
+            embed = hikari.Embed(title="Study Session Wraps Up!", description="Your study session has been completed.")
+            embed.add_field("Total Study time", f"{beautified}{f" (raw: {raw})" if resx[2] == 1 else ""}", inline=True)
+            embed.add_field("Earnings", f"`{sols}`𝑠 | `{xi}`ξ")
+            embed.set_footer(f"{"Dev Mode Enabled. " if resx[2] == 1 else ""}{" 1.25x bonus (locked-in session). " if res[4] == 'li' else "Regular earning (standard-session). "}Take a rest!")
+            await ctx.respond(embed=embed)
         else:
             await ctx.respond("You're not currently on a study session! Make sure to start it first!", ephemeral=True)
 
@@ -73,11 +78,16 @@ class elapse(lightbulb.SlashCommand, name="elapse", description="Check how long 
     @lightbulb.invoke
     @registerStatus
     async def callback(self, ctx: lightbulb.Context) -> None:
-        if cur.execute("SELECT study FROM users WHERE userid = ?", (ctx.user.id,)).fetchone() != ("li", "st"):
+        study = cur.execute("SELECT study FROM users WHERE userid = ?", (ctx.user.id,)).fetchone()
+        if study is None or study[0] not in ("li", "st"):
             await ctx.respond("You haven't start studying yet! Do so by running `/study [type]`,")
         else:
-
-            await ctx.respond("Total time elapsed: ``.")
+            alloc = cur.execute("SELECT study_start FROM users WHERE userid = ?", (ctx.user.id,)).fetchone()
+            now = int(datetime.now().timestamp())
+            calc = now - alloc[0]
+            elapse, raw = prettify(calc)
+            resx = cur.execute("SELECT * FROM statuses WHERE userid = ?", (ctx.user.id,)).fetchone()
+            await ctx.respond(f"Total time elapsed: `{elapse}`{f" (raw = `{raw}`)" if resx[2] == 1 else ""}.")
 
 def load(client: lightbulb.Client):
     client.register(start)

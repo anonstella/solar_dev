@@ -19,6 +19,7 @@ cur = conn.cursor()
 
 initialise()
 
+
 @bot.listen(hikari.StartingEvent)
 async def on_starting(_: hikari.StartingEvent) -> None:
     for filename in os.listdir('./extensions'):

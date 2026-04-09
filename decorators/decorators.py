@@ -29,11 +29,11 @@ def registerStatus(func):
         return await func(self, ctx)
     return wrapper
 
-def prettify(seconds: int=None, time: bool=None) -> str:
+def prettify(seconds: int, time: bool=None) -> str:
     """
     converts seconds into readable format.
     """
-    if seconds is not None:
+    if seconds is not None and bool:
         hrs = seconds // 3600
         mins = (seconds % 3600) // 60
         secs = seconds % 60
@@ -52,5 +52,5 @@ def prettify(seconds: int=None, time: bool=None) -> str:
         raw.append(secs)
 
         return " ".join(data), raw
-   #  else:
-    return " ".join(data), raw 
+    elif seconds is not None and not bool:
+        return " ".join(data)

@@ -5,6 +5,12 @@ from lightbulb import Choice
 from datetime import datetime
 from functions.economy import initialise
 from decorators.decorators import registerStatus
+from dotenv import load_dotenv
+import os, requests
+
+load_dotenv()
+
+QAPI = os.getenv("QAPI")
 
 loader = lightbulb.Loader()
 
@@ -46,5 +52,49 @@ class settings(lightbulb.SlashCommand, name="settings", description="Opens the s
 
         await ctx.respond(embed=embed)
 
+@loader.command
+class analytics(lightbulb.SlashCommand, name="analytics", description="Shows the user's study analytics and more."):
+    
+    @lightbulb.invoke
+    async def callback(self, ctx: lightbulb.Context):
+        # TODO: allocate some amount of work into making a chart that displays the average analytics of the users' study session and more.
+        out = 1
+        ctx.respond(attachment=out)
+
+@loader.command
+class rquote(lightbulb.SlashCommand, name="rquotes", description="Sends a random quote."):
+
+    @lightbulb.invoke
+    async def callback(self, ctx: lightbulb.Context):
+        api = "https://api.api-ninjas.com/v2/randomquotes"
+        stat = requests.get(api, headers={
+            'X-Api-Key': QAPI
+        })
+        
+
+        if stat.status_code == 200:
+            data = stat.json()
+            if data and "quote" in data[0]:
+                get_quote = data[0]["quote"]
+                get_author = data[0]["author"]
+            else:
+                get_quote = "No quote found."
+                get_author = "No author found."
+        else:
+            get_quote = "API request failed."
+            get_author = "API request failed."
+        
+        embed = hikari.Embed(title="Quote")
+        embed.add_field(f"\"{get_quote}\" - {get_author}")
+        await ctx.respond(embed=embed)
+
+# @loader.command
+# class help(lightbulb.SlashCommand, name="help", description="Opens a help menu."):
+    
+#     @lightbulb.invoke
+#     async def callback(self, ctx: lightbulb.Context):
+#         commands = ctx.client.slash_
+
 def load(client: lightbulb.Client):
     client.register(settings)
+    client.register(rquote)

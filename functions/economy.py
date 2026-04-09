@@ -1,4 +1,5 @@
 import sqlite3
+import random
 
 conn = sqlite3.connect('database.db')
 cur = conn.cursor()
@@ -18,7 +19,7 @@ class EconomyCalculate:
     A class dedicated to economy-related stuffs.
     """
 
-    def calculate_earnings(self, data):
+    def calculate_earnings(self, data, locked_in: bool=None):
         """
         Calculates earnings for Sols and Xi.
         """
@@ -53,6 +54,10 @@ class EconomyCalculate:
 
         if remainder >= XI_GRACE: # if remainder is more than / equal to 1500 seconds (aka 25 or more minutes), add one xi
             xi += 1
+        
+        if locked_in:
+            sols = round(sols*1.25)
+            xi = round(xi*1.25)
 
         return sols, xi
 

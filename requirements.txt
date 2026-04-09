@@ -2,3 +2,6 @@ hikari
 hikari-lightbulb
 hikari-miru
 python-dotenv
+numpy
+matplotlib
+requests
