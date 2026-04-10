@@ -1,7 +1,7 @@
 import lightbulb
 import sqlite3
 from decorators.decorators import *
-from functions.economy import *
+from functions.study_related import *
 import hikari
 
 loader = lightbulb.Loader()
@@ -13,11 +13,10 @@ cur = conn.cursor()
 initialise()
 
 @loader.command
-class balance(lightbulb.SlashCommand, name="balance", description="Shows the balance of the user."):
+class profile(lightbulb.SlashCommand, name="profile", description="Shows the user's profile."):
     
     @lightbulb.invoke
     async def callback(self, ctx: lightbulb.Context) -> None:
-        #TODO: Make it respond an embed of a user's wallet balance.
         cur.execute("SELECT * FROM users WHERE userid = ?", (ctx.user.id,))
         inf = cur.fetchone()
 
@@ -29,4 +28,4 @@ class balance(lightbulb.SlashCommand, name="balance", description="Shows the bal
     
 
 def load(client: lightbulb.Client):
-    client.register(balance)
+    client.register(profile)

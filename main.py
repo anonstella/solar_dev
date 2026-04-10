@@ -3,13 +3,19 @@ from dotenv import load_dotenv
 import os
 import lightbulb
 import sqlite3
-from functions.economy import initialise
+from functions.study_related import initialise
 
 load_dotenv()
 
-TOKEN = os.getenv("TOKEN")
+########################################################### NOTE ##################################################################
+#                                                                                                                                 #
+#   ChatGPT is used for debugging purposes, such as troubleshooting error. Anything else is done by me. More on that in README.md #
+#                                                                                                                                 #
+########################################################### END ###################################################################
 
-bot = hikari.GatewayBot(TOKEN)
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+
+bot = hikari.GatewayBot(DISCORD_TOKEN)
 client = lightbulb.client_from_app(bot)
 
 bot.subscribe(hikari.StartingEvent, client.start)
@@ -18,7 +24,6 @@ conn = sqlite3.connect('database.db')
 cur = conn.cursor()
 
 initialise()
-
 
 @bot.listen(hikari.StartingEvent)
 async def on_starting(_: hikari.StartingEvent) -> None:
