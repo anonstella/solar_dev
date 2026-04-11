@@ -15,7 +15,7 @@ load_dotenv()
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
-bot = hikari.GatewayBot(DISCORD_TOKEN)
+bot = hikari.GatewayBot(DISCORD_TOKEN, intents=hikari.Intents.ALL)
 client = lightbulb.client_from_app(bot)
 
 bot.subscribe(hikari.StartingEvent, client.start)
@@ -33,6 +33,5 @@ async def on_starting(_: hikari.StartingEvent) -> None:
             print(f"Initialised extensions.{filename[:-3]}!")
 
     await client.sync_application_commands()
-
 
 bot.run()

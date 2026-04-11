@@ -72,7 +72,7 @@ class StudyCalculate:
         """
         cur.execute("UPDATE users SET sols = sols + ?, xi = xi + ? WHERE userid = ?", (sols, xi, ctx.user.id))
 
-async def stop_studying(event, usrid):
+async def stop_studying(event, usrid, DM: bool):
     now = int(datetime.now().timestamp())
     cur.execute("SELECT * FROM users WHERE userid = ?", (usrid,))
     res = cur.fetchone()
@@ -102,7 +102,11 @@ async def stop_studying(event, usrid):
         dev = "Dev Mode Enabled. " if resx[2] == 1 else ""
         session = " 1.25x bonus (locked-in session). " if res[4] == 'li' else "Regular earning (standard-session). "
         embed.set_footer(f"{dev}{session}Take a rest!")
-        await event.message.respond(embed=embed)
+        if DM:
+            user = await event.app.rest.fetch_user(usrid)
+            await user.send(embed=embed)
+        else:
+            await event.message.respond(embed=embed)
         conn.commit()
 
         return embed
@@ -119,9 +123,17 @@ class StudyChecker:
             if channel_name == "study":
                 pass
             else:
-                await stop_studying(event, author_id)
+                await stop_studying(event, author_id, DM=False)
         elif pos[0] == "li":
-            await stop_studying(event, author_id)
+            await stop_studying(event, author_id, DM=False)
+        else:
+            pass # Skip checking because user is not studying.
+    
+    async def reboundCheck(self, event, usrid: int):
+        cur.execute("SELECT study FROM users WHERE userid = ?", (usrid,))
+        pos = cur.fetchone()
+        if pos[0] != "NONE":
+            await stop_studying(event, usrid, DM=True)
         else:
             pass # Skip checking because user is not studying.
 

@@ -46,6 +46,7 @@ class start(lightbulb.SlashCommand, name="start", description="Starts a study se
             else:
                 await ctx.respond("Invalid study type.")
                 return
+
             await ctx.respond(f"Study session started in `{mode}` mode! To stop, run `/stop`.")
 
 @loader.command
@@ -78,7 +79,7 @@ class stop(lightbulb.SlashCommand, name="stop", description="Stops a study sessi
                 return
 
             Δt = now - history[3]
-            beautified, raw = prettify(Δt)
+            beautified, raw = prettify(Δt, True)
             eco = StudyCalculate()
             sols, xi = eco.calculate_earnings(raw)
             cur.execute("UPDATE history SET end = ?, sols_acc = ?, xi_acc = ? WHERE id = ?", (now, sols, xi, history[0]))
@@ -104,7 +105,7 @@ class elapse(lightbulb.SlashCommand, name="elapse", description="Check how long 
     async def callback(self, ctx: lightbulb.Context) -> None:
         study = cur.execute("SELECT study FROM users WHERE userid = ?", (ctx.user.id,)).fetchone()
         if study is None or study[0] not in ("li", "st"):
-            await ctx.respond("You haven't start studying yet! Do so by running `/study [type]`,")
+            await ctx.respond("You haven't start studying yet! Do so by running `/start [type]`,")
         else:
             alloc = cur.execute("SELECT study_start FROM users WHERE userid = ?", (ctx.user.id,)).fetchone()
             now = int(datetime.now().timestamp())
@@ -117,10 +118,33 @@ class elapse(lightbulb.SlashCommand, name="elapse", description="Check how long 
 async def lockedInCheck(event: hikari.MessageCreateEvent) -> None:
     if event.is_bot:
         return
+    
     sc = StudyChecker()
     channel = await event.app.rest.fetch_channel(event.channel_id)
     await sc.deepcheck(event, event.author.id, channel.name)
     
+
+@loader.listener(hikari.PresenceUpdateEvent)
+async def presenceUpdateCheck(event: hikari.PresenceUpdateEvent) -> None:
+    userid = event.user_id
+    # user = event.user <---- unreliable
+
+    # print("Presence event fired, usr : ", userid)
+    if userid is None:
+        return
+    presence = event.presence
+
+    # print("status:", presence.status)
+    # print("visible_status:", presence.visible_status)
+
+    if presence.visible_status == hikari.Status.OFFLINE:
+        sc = StudyChecker()
+        usr = await event.app.rest.fetch_user(userid)
+        print(f"User offline: {usr}")
+        await sc.reboundCheck(event, userid)
+    else:
+        pass
+
 
 def load(client: lightbulb.Client):
     client.register(start)
